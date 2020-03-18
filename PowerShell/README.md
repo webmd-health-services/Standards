@@ -187,7 +187,7 @@ Use `Write-Verbose` for messages the user should see if they're trying to track 
 
 Use `Write-Debug` for messages developer-only messages.
 
-## Script Template
+## Script Template
 
 Use the following template for new scripts:
 

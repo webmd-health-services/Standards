@@ -1,4 +1,14 @@
 <#
+.SYNOPSIS
+Gets the type accelerators that should be lowercase.
+
+.DESCRIPTION
+The `Get-LowerCaseTypeAccelerator` gets a list of type accelerators that should be lowercase in code. Our standards dictate that only type accelerators whose names don't match the full type name of their underlying type should be lowercase.
+
+.EXAMPLE
+.\Get-LowerCaseTypeAccelerator.ps1
+
+Demonstrates how to call this script.
 #>
 [CmdletBinding()]
 param(

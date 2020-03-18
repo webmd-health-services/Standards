@@ -37,10 +37,7 @@ function Find-Type
     {
         $typeNames['ordered'] = 'ordered'
 
-        [PSObject].Assembly.GetType('System.Management.Automation.TypeAccelerators')::Get.GetEnumerator() |
-            ForEach-Object { [pscustomobject]@{ Name = $_.Key ; Type = $_.Value } } |
-            Where-Object { $_.Type.Name -notlike $_.Name -or $_.Type.Namespace -ne 'System' } |
-            Where-Object { $_.Type.Name -notlike '*Attribute' } |
+        & (Join-Path -Path $PSScriptRoot -ChildPath 'Get-LowerCaseTypeAccelerator.ps1' -Resolve) |
             ForEach-Object { $typeNames[$_.Name] = $_.Name.ToLowerInvariant() }
 
         foreach( $assembly in [AppDomain]::CurrentDomain.GetAssemblies())
@@ -76,7 +73,7 @@ function Find-Type
 
 $typeNames = @{}
 
-$searchRegex = [regex]'\[([A-Za-z]+)(\[\])?\]' 
+$searchRegex = [regex]'\[\s*([A-Za-z]+)\s*(\[\s*\])?\s*\]' 
 Resolve-Path -Path $Path -ErrorAction Stop |
     Get-ChildItem -Include '*.ps1','*.psm1' -Recurse |
     ForEach-Object {
