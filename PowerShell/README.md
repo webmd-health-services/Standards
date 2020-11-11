@@ -3,6 +3,14 @@
 
 This document explains our PowerShell coding standards and guidelines. Following these will keep our code consistent and easier to understand and maintain.
 
+# Variables
+
+Variable names should be in [camelCase](https://techterms.com/definition/camelcase), where the first letter of each word
+in the variable is capitalized, except for the first word.
+
+Parameter names are in [PascalCase](https://wiki.c2.com/?PascalCase) (see the [Parameters](#parameters) section for more
+info.)
+
 # Types
 
 When declaring explicit variable or parameter types, always use the case of the type. 
@@ -52,7 +60,26 @@ Always enable strict mode. This will catch bugs.
 Set-StrictMode -Version 'Latest'
 ```
 
-For script/function parameters, attributes should be ordered this way: the `Parameter` attribute, any validation attributes, documentation, and the parameter type (optional) and name on the same line. Parameter names should be capitalized and Pascal-cased (i.e. every word begins with a capital letter. Abbreviations of two letters should be in all caps, e.g. ID  instead of Id .) (See the "Types" section above for how to case type names.)
+Always use full function/cmdlet names. Never use aliases, which require readers to memorize all of PowerShell's aliases.
+Some aliases don't exist across operating systems. Aliases should only be used at an interactive prompt. This makes
+scripts easier to understand and debug. For example, `Get-Process` not `gps`, `Get-ChildItem` not `gci`/`ls`/`dir`.
+
+Never use positional parameters when calling a function/cmdlet. Positional parameters require readers to memorize a
+command's positional parameters. Always use the parameter/switch name, e.g. `Join-Path -Path $PSScriptRoot -ChildPath
+'build.ps1'` not `Join-Path $PSScriptRoot 'build.ps1'`. This improves readability and improves forward compatibility if
+a command's positional parameters change.
+
+Always enclose strings with single quotes. Never leave strings without quotes. This makes strings easier to see in code
+editors and makes it easier to distinguish strings from constants and enumeration values.
+
+## Parameters
+
+For script/function parameters, attributes should be ordered this way: the `Parameter` attribute, any validation
+attributes, documentation, and the parameter type (optional) and name on the same line.
+
+Parameter names should be capitalized and Pascal-cased (i.e. every word begins with a capital letter. Abbreviations of
+two letters should be in all caps, e.g. ID  instead of Id .) (See the [Types](#types) section above for how to case type
+names.)
 
 ```powershell
 [CmdletBinding(DefaultParameterSetName='FullPipeline')]
@@ -86,13 +113,36 @@ param(
 )
 ```
 
-Always use full function/cmdlet names. Never use aliases, which require readers to memorize all of PowerShell's aliases. Some aliases don't exist across operating systems. Aliases should only be used at an interactive prompt. This makes scripts easier to understand and debug. For example, `Get-Process` not `gps`, `Get-ChildItem` not `gci`/`ls`/`dir`.
+## Script Template
 
-Never use positional parameters when calling a function/cmdlet. Positional parameters require readers to memorize a command's positional parameters. Always use the parameter/switch name, e.g. `Join-Path -Path $PSScriptRoot -ChildPath 'build.ps1'` not `Join-Path $PSScriptRoot 'build.ps1'`. This improves readability and improves forward compatibility if a command's positional parameters change.
+Use the following template for new scripts:
 
-Always enclose strings with single quotes. Never leave strings without quotes. This makes strings easier to see in code editors and makes it easier to distinguish strings from constants and enumeration values.
+```powershell
+<#
+.SYNOPSIS
+A short, one line summary of what the script does.
+ 
+.DESCRIPTION
+The `MY SCRIPT NAME.ps1` script... A detailed description of what the script does, why it does it, and how it does it. Your future self will forget how your script was implemented and what it does. Use the description to explain that. Your future self will thank you.
+ 
+.EXAMPLE
+MY SCRIPT NAME.ps1
+Demonstrates how this script does what it does.
+#>
+[CmdletBinding()]
+param(
+)
 
-Lines over 100 characters should be shortened. It is easier to scroll up and down than left and right. You can refactor expressions to variables:
+#Require -Version 5.1
+Set-StrictMode -Version 'Latest'
+
+## Your code goes here.
+```
+
+# Line Length and Indentation
+
+Lines over 120 characters should be shortened. It is easier to scroll up and down than left and right. You can refactor
+expressions to variables:
 
 ```powershell
 # Instead of this long line:
@@ -103,9 +153,9 @@ $path = Join-Path -Path $PSScriptRoot -ChildPath 'Arc' -Resolve
 Get-ChildItem -Path $path -Recurse -Filter '*.ps1' -Exclude $exclude -Include $include
 ```
 
-If a line that calls another command is longer than 100 characters, put each parameter after the first on a new line, indented to line up with the first parameter. When breaking a command across multiple lines, don't put more than one parameter on a line.
-
-Instead of this:
+If a line that calls another command is longer than 120 characters, put each parameter after the first on a new line,
+indented to line up with the first parameter. When breaking a command across multiple lines, don't put more than one
+parameter on a line.
 
 ```
 Invoke-Robocopy -Source $binSourcePath `
@@ -145,7 +195,7 @@ $searchPaths = & {
 }
 ```
 
-Variable names should begin with a lowercase letter.
+# Blocks
 
 All blocks (except script blocks) that require curly braces must have the opening and closing curly braces on their own lines:
 
@@ -186,32 +236,6 @@ Use `Write-Information` for progess-type logging information the user should alw
 Use `Write-Verbose` for messages the user should see if they're trying to track down a problem or understand more about what your code is doing.
 
 Use `Write-Debug` for messages developer-only messages.
-
-## Script Template
-
-Use the following template for new scripts:
-
-```powershell
-<#
-.SYNOPSIS
-A short, one line summary of what the script does.
- 
-.DESCRIPTION
-The `MY SCRIPT NAME.ps1` script... A detailed description of what the script does, why it does it, and how it does it. Your future self will forget how your script was implemented and what it does. Use the description to explain that. Your future self will thank you.
- 
-.EXAMPLE
-MY SCRIPT NAME.ps1
-Demonstrates how this script does what it does.
-#>
-[CmdletBinding()]
-param(
-)
-
-#Require -Version 5.1
-Set-StrictMode -Version 'Latest'
-
-## Your code goes here.
-```
 
 # Functions
 
