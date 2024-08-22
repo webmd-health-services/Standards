@@ -47,18 +47,21 @@ convention.
 # Strings
 
 Always use single quotes around strings unless using string interpolation to embed expressions in the string. When using
-string interpolation, surround all expressions, even just variables, with `$()`.
+string interpolation, surround variables with `${variable}` and all expressions  with `$()`.
 
 ```powershell
 # If there's no interpolation in a string, always use single quotes.
 'Just a raw string.'
 
-# If using interpolation, always surround expressions and variables with `$()`.
-"Path: $($env:Path)"
+# If using interpolation, always surround variables with `${}`.
+"Path: ${env:Path}"
+
+# If using interpolation, always surround expressions with `$()`.
+"$($PSVersionTable['PSEdition'])
 ```
 
 PowerShell allows un-quoted strings as parameter values. Always quote string parameters. If the parameter is an
-enumeration (i.e. only a specific set of values are accepted), don't quote those values.
+enumeration or set (i.e. only a specific set of values are accepted), don't quote those values.
 
 ```powershell
 # Always quote strings passed as parameters.
@@ -235,7 +238,8 @@ $largeFiles =
     Select-Object -ExpandProperty 'FullName'
 ```
 
-When using a script block to assign the value of a variable, indent the contents of the script block one level below the indentation of the variable:
+When using a script block to assign the value of a variable, indent the contents of the script block one level below the
+indentation of the variable:
 
 ```powershell
 $searchPaths = & {
@@ -260,10 +264,11 @@ $msg = "[$([Environment]::MachineName)] Lorem ipsum dolor sit amet, consectetur 
 # Blocks
 
 All blocks (except script blocks) that require curly braces must have the opening and closing curly braces on their own
-lines:
+lines. Parenthesis that surround block expressions should have a space before the opening parenthesis and no spaces
+after the opening parenthesis or before the closing parenthesis.
 
 ```powershell
-if( $true )
+if ($true)
 {
     # Something
 }
@@ -278,12 +283,12 @@ When negating a statement, use the -not  operator.
 
 ```powershell
 # Instead of using !
-if( !$false )
+if (!$false)
 {
 }
 
 # Use -not
-if( -not $false )
+if (-not $false)
 {
 }
 ```
@@ -296,10 +301,10 @@ Never use `Write-Output` to return logging information. You should only ever ret
 
 Use `Write-Information` for progess-type logging information the user should always see.
 
-Use `Write-Verbose` for messages the user should see if they're trying to track down a problem or understand more about
-what your code is doing.
+Use `Write-Verbose` for messages the *user* should see if they're trying to track down a problem or understand more
+about what your code is doing.
 
-Use `Write-Debug` for messages developer-only messages.
+Use `Write-Debug` for developer-only messages.
 
 # Functions
 
@@ -365,9 +370,9 @@ function ApprovedVerb-Noun
     [CmdletBinding()]
     [OutputType([Object])]
     param(
-        [Parameter(Mandatory,ValueFromPipeline)]
         # Documentation describing this parameter. Try to use a more descriptive name than InputObject. Use InputObject
         # only if the parameter takes different types/kinds of objects.
+        [Parameter(Mandatory,ValueFromPipeline)]
         $InputObject
     )
  
@@ -428,7 +433,7 @@ present.
 
 ```powershell
 # Allows us to be platform agnostic in our calls of 'GetAccessControl'.
-if( -not ([IO.DirectoryInfo]::New([Environment]::CurrentDirectory) | Get-Member -Name 'GetAccessControl') )
+if (-not ([IO.DirectoryInfo]::New([Environment]::CurrentDirectory) | Get-Member -Name 'GetAccessControl'))
 {
     Update-TypeData -MemberName 'GetAccessControl' -MemberType 'ScriptMethod' -TypeName 'IO.DirectoryInfo' -Value {
         [CmdletBinding()]
@@ -449,9 +454,10 @@ Always have a .psd1. Use `New-ModuleManifest` to create one.
 Always have a .psm1 file. See the template below.
 
 Always choose and use a default command prefix for all your module's commands to avoid name conflicts with other
-modules. Set the prefix with the `DefaultCommandPrefix` property in your module's manifest. For example, Carbon uses
-`C`, `BuildMasterAutomation` uses `BM`, `BitbucketServerAutomation` uses `BBServer`, `ProGetAutomation` uses `ProGet`,
-etc.
+modules. Add the prefix to the literal function names. Do ***not** set the prefix with the `DefaultCommandPrefix`
+property in your module's manifest: PowerShell uses the non-prefixed version of commands to determine if command across
+modules clobber each other. For example, Carbon uses `C`, `BuildMasterAutomation` uses `BM`, `BitbucketServerAutomation`
+uses `BBServer`, `ProGetAutomation` uses `ProGet`, etc.
 
 Never store global state in a module variable. Module variables should only hold stateless information. If your module
 has state it needs to keep track of (like a connection to a server or something), follow the pattern used by PowerShell:
@@ -479,18 +485,20 @@ above, but add `Use-CallerPreference` after `Set-StrictMode`:
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 ```
 
+Module variables must be prefixed with the `script:` scope to identity them as being used throughout the module.
+
 
 ## Module .psm1 Template
 
 ```powershell
 # Declare module-level variables
-$myModuleVar = 'fubar'
+$script:myModuleVar = 'fubar'
  
 # Do other stuff: add types, add extended type data, etc.
  
 # Include your functions for developers.
 $functionRoot = Join-Path -Path $PSScriptRoot -ChildPath 'Functions'
-if( (Test-Path -Path $functionRoot) )
+if ((Test-Path -Path $functionRoot))
 {
     Get-ChildItem -Path $functionRoot -Filter '*.ps1' | ForEach-Object { . $_.FullName }
 }
