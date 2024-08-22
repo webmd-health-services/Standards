@@ -1,3 +1,4 @@
+<!--markdownlint-disable MD012 no-multiple-blanks-->
 
 # PowerShell Coding and Style Guide
 
@@ -18,11 +19,11 @@ info.)
 
 # Types
 
-When declaring explicit variable or parameter types, always use the case of the type. 
+When declaring explicit variable or parameter types, always use the case of the type.
 
 PowerShell has special type accelerators that are aliases to special types. It should be clear in your code that you're
 using a type accelerator, so they should always be lower case if the accelerator is an alias to a type with a different
-name (e.g. `[int]` for `Int32`) or not in the `System` namespace (e.g. `[ipaddress]` for `System.Net.IPAddress`). 
+name (e.g. `[int]` for `Int32`) or not in the `System` namespace (e.g. `[ipaddress]` for `System.Net.IPAddress`).
 
 Never use the `System`  part of a class's name. PowerShell adds it for you automatically.
 
@@ -128,11 +129,11 @@ param(
     # The settings to use.
     [Parameter(Mandatory)]
     [String] $Environment,
-    
+
     # Just build.
     [Parameter(ParameterSetName='PartialPipeline')]
     [switch] $Build,
-    
+
     # Just migrate the database(s).
     [Parameter(ParameterSetName='PartialPipeline')]
     [switch] $MigrateDB,
@@ -143,7 +144,7 @@ param(
 ```
 
 Parameter attribute property values should only be visible and set if its value is being set to a non-default value,
-i.e. `[Parameter(ParameterSetName='PartialPipeline')]` not 
+i.e. `[Parameter(ParameterSetName='PartialPipeline')]` not
 `[Parameter(Mandatory=$false,ParameterSetName='PartialPipeline')]`. Boolean attribute property values must be omitted,
 e.g. `[Parameter(Mandatory)]`, not `[Parameter(Mandatory=$true)]`.
 
@@ -204,7 +205,7 @@ If a line that calls another command is longer than 120 characters, put each par
 indented to line up with the first parameter. When breaking a command across multiple lines, don't put more than one
 parameter on a line.
 
-```
+```powershell
 Invoke-Robocopy -Source $binSourcePath `
                 -Destination $destinationBinPath `
                 -IncludeFiles $binWhitelist `
@@ -217,7 +218,7 @@ Invoke-Robocopy -Source $binSourcePath `
 When a pipeline is longer than 100 characters, put each command/step of the pipeline on its own line:
 
 ```powershell
-Get-ChildItem -Recurse | 
+Get-ChildItem -Recurse |
     Sort-Object -Property 'Size' |
     Where-Object { $_.Size -gt 1mb } |
     Select-Object -ExpandProperty 'FullName'
@@ -227,8 +228,8 @@ When assigning the result of a pipeline to a variable, and the pipeline is longe
 command onto its own line, and put the first command of the pipeline on the line, indented one level:
 
 ```powershell
-$largeFiles = 
-    Get-ChildItem -Recurse | 
+$largeFiles =
+    Get-ChildItem -Recurse |
     Sort-Object -Property 'Size' |
     Where-Object { $_.Size -gt 1mb } |
     Select-Object -ExpandProperty 'FullName'
@@ -277,7 +278,7 @@ When negating a statement, use the -not  operator.
 
 ```powershell
 # Instead of using !
-if( !$false ) 
+if( !$false )
 {
 }
 
@@ -326,11 +327,11 @@ function ApprovedVerb-Noun
     <#
     .SYNOPSIS
     A short, one line summary of what the function does.
-     
+
     .DESCRIPTION
     A detailed description of what the function does, why it does it, and how it does it. People want to read this
     rather than your code.
-     
+
     .EXAMPLE
     Demonstrates how to use this function.
     #>
@@ -353,11 +354,11 @@ function ApprovedVerb-Noun
     <#
     .SYNOPSIS
     A short, one line summary of what the function does.
-     
+
     .DESCRIPTION
     A detailed description of what the function does, why it does it, and how it does it. People want to read this
     rather than your code.
-     
+
     .EXAMPLE
     Demonstrates how to use this function.
     #>
@@ -386,14 +387,15 @@ function ApprovedVerb-Noun
 }
 ```
 
-# Modules
+## Modules
+
 Modules are PowerShell's unit of sharing. Common functions are packaged together into modules. If you want to share
 functions, put them in a module. Never dot-source a file containing functions.
 
 
 Layout a module like this:
 
-```
+```text
 + MyModule
   + bin
     * MyModule.dll
@@ -434,7 +436,7 @@ if( -not ([IO.DirectoryInfo]::New([Environment]::CurrentDirectory) | Get-Member 
             [Security.AccessControl.AccessControlSections]$IncludeSections =
                 [Security.AccessControl.AccessControlSections]::All
         )
-        
+
         return [IO.FileSystemAclExtensions]::GetAccessControl($this, $IncludeSections)
     }
 }
@@ -493,5 +495,5 @@ if( (Test-Path -Path $functionRoot) )
     Get-ChildItem -Path $functionRoot -Filter '*.ps1' | ForEach-Object { . $_.FullName }
 }
 
-# When packaging your module, merge your function files into this file here. 
+# When packaging your module, merge your function files into this file here.
 ```
