@@ -1,3 +1,4 @@
+<!--markdownlint-disable MD012 no-multiple-blanks-->
 
 # PowerShell Coding and Style Guide
 
@@ -18,11 +19,11 @@ info.)
 
 # Types
 
-When declaring explicit variable or parameter types, always use the case of the type. 
+When declaring explicit variable or parameter types, always use the case of the type.
 
 PowerShell has special type accelerators that are aliases to special types. It should be clear in your code that you're
 using a type accelerator, so they should always be lower case if the accelerator is an alias to a type with a different
-name (e.g. `[int]` for `Int32`) or not in the `System` namespace (e.g. `[ipaddress]` for `System.Net.IPAddress`). 
+name (e.g. `[int]` for `Int32`) or not in the `System` namespace (e.g. `[ipaddress]` for `System.Net.IPAddress`).
 
 Never use the `System`  part of a class's name. PowerShell adds it for you automatically.
 
@@ -46,18 +47,21 @@ convention.
 # Strings
 
 Always use single quotes around strings unless using string interpolation to embed expressions in the string. When using
-string interpolation, surround all expressions, even just variables, with `$()`.
+string interpolation, surround variables with `${variable}` and all expressions  with `$()`.
 
 ```powershell
 # If there's no interpolation in a string, always use single quotes.
 'Just a raw string.'
 
-# If using interpolation, always surround expressions and variables with `$()`.
-"Path: $($env:Path)"
+# If using interpolation, always surround variables with `${}`.
+"Path: ${env:Path}"
+
+# If using interpolation, always surround expressions with `$()`.
+"$($PSVersionTable['PSEdition'])
 ```
 
 PowerShell allows un-quoted strings as parameter values. Always quote string parameters. If the parameter is an
-enumeration (i.e. only a specific set of values are accepted), don't quote those values.
+enumeration or set (i.e. only a specific set of values are accepted), don't quote those values.
 
 ```powershell
 # Always quote strings passed as parameters.
@@ -128,11 +132,11 @@ param(
     # The settings to use.
     [Parameter(Mandatory)]
     [String] $Environment,
-    
+
     # Just build.
     [Parameter(ParameterSetName='PartialPipeline')]
     [switch] $Build,
-    
+
     # Just migrate the database(s).
     [Parameter(ParameterSetName='PartialPipeline')]
     [switch] $MigrateDB,
@@ -143,7 +147,7 @@ param(
 ```
 
 Parameter attribute property values should only be visible and set if its value is being set to a non-default value,
-i.e. `[Parameter(ParameterSetName='PartialPipeline')]` not 
+i.e. `[Parameter(ParameterSetName='PartialPipeline')]` not
 `[Parameter(Mandatory=$false,ParameterSetName='PartialPipeline')]`. Boolean attribute property values must be omitted,
 e.g. `[Parameter(Mandatory)]`, not `[Parameter(Mandatory=$true)]`.
 
@@ -204,7 +208,7 @@ If a line that calls another command is longer than 120 characters, put each par
 indented to line up with the first parameter. When breaking a command across multiple lines, don't put more than one
 parameter on a line.
 
-```
+```powershell
 Invoke-Robocopy -Source $binSourcePath `
                 -Destination $destinationBinPath `
                 -IncludeFiles $binWhitelist `
@@ -217,7 +221,7 @@ Invoke-Robocopy -Source $binSourcePath `
 When a pipeline is longer than 100 characters, put each command/step of the pipeline on its own line:
 
 ```powershell
-Get-ChildItem -Recurse | 
+Get-ChildItem -Recurse |
     Sort-Object -Property 'Size' |
     Where-Object { $_.Size -gt 1mb } |
     Select-Object -ExpandProperty 'FullName'
@@ -227,14 +231,15 @@ When assigning the result of a pipeline to a variable, and the pipeline is longe
 command onto its own line, and put the first command of the pipeline on the line, indented one level:
 
 ```powershell
-$largeFiles = 
-    Get-ChildItem -Recurse | 
+$largeFiles =
+    Get-ChildItem -Recurse |
     Sort-Object -Property 'Size' |
     Where-Object { $_.Size -gt 1mb } |
     Select-Object -ExpandProperty 'FullName'
 ```
 
-When using a script block to assign the value of a variable, indent the contents of the script block one level below the indentation of the variable:
+When using a script block to assign the value of a variable, indent the contents of the script block one level below the
+indentation of the variable:
 
 ```powershell
 $searchPaths = & {
@@ -259,10 +264,11 @@ $msg = "[$([Environment]::MachineName)] Lorem ipsum dolor sit amet, consectetur 
 # Blocks
 
 All blocks (except script blocks) that require curly braces must have the opening and closing curly braces on their own
-lines:
+lines. Parenthesis that surround block expressions should have a space before the opening parenthesis and no spaces
+after the opening parenthesis or before the closing parenthesis.
 
 ```powershell
-if( $true )
+if ($true)
 {
     # Something
 }
@@ -277,12 +283,12 @@ When negating a statement, use the -not  operator.
 
 ```powershell
 # Instead of using !
-if( !$false ) 
+if (!$false)
 {
 }
 
 # Use -not
-if( -not $false )
+if (-not $false)
 {
 }
 ```
@@ -295,10 +301,10 @@ Never use `Write-Output` to return logging information. You should only ever ret
 
 Use `Write-Information` for progess-type logging information the user should always see.
 
-Use `Write-Verbose` for messages the user should see if they're trying to track down a problem or understand more about
-what your code is doing.
+Use `Write-Verbose` for messages the *user* should see if they're trying to track down a problem or understand more
+about what your code is doing.
 
-Use `Write-Debug` for messages developer-only messages.
+Use `Write-Debug` for developer-only messages.
 
 # Functions
 
@@ -326,11 +332,11 @@ function ApprovedVerb-Noun
     <#
     .SYNOPSIS
     A short, one line summary of what the function does.
-     
+
     .DESCRIPTION
     A detailed description of what the function does, why it does it, and how it does it. People want to read this
     rather than your code.
-     
+
     .EXAMPLE
     Demonstrates how to use this function.
     #>
@@ -353,20 +359,20 @@ function ApprovedVerb-Noun
     <#
     .SYNOPSIS
     A short, one line summary of what the function does.
-     
+
     .DESCRIPTION
     A detailed description of what the function does, why it does it, and how it does it. People want to read this
     rather than your code.
-     
+
     .EXAMPLE
     Demonstrates how to use this function.
     #>
     [CmdletBinding()]
     [OutputType([Object])]
     param(
-        [Parameter(Mandatory,ValueFromPipeline)]
         # Documentation describing this parameter. Try to use a more descriptive name than InputObject. Use InputObject
         # only if the parameter takes different types/kinds of objects.
+        [Parameter(Mandatory,ValueFromPipeline)]
         $InputObject
     )
  
@@ -386,14 +392,15 @@ function ApprovedVerb-Noun
 }
 ```
 
-# Modules
+## Modules
+
 Modules are PowerShell's unit of sharing. Common functions are packaged together into modules. If you want to share
 functions, put them in a module. Never dot-source a file containing functions.
 
 
 Layout a module like this:
 
-```
+```text
 + MyModule
   + bin
     * MyModule.dll
@@ -426,7 +433,7 @@ present.
 
 ```powershell
 # Allows us to be platform agnostic in our calls of 'GetAccessControl'.
-if( -not ([IO.DirectoryInfo]::New([Environment]::CurrentDirectory) | Get-Member -Name 'GetAccessControl') )
+if (-not ([IO.DirectoryInfo]::New([Environment]::CurrentDirectory) | Get-Member -Name 'GetAccessControl'))
 {
     Update-TypeData -MemberName 'GetAccessControl' -MemberType 'ScriptMethod' -TypeName 'IO.DirectoryInfo' -Value {
         [CmdletBinding()]
@@ -434,7 +441,7 @@ if( -not ([IO.DirectoryInfo]::New([Environment]::CurrentDirectory) | Get-Member 
             [Security.AccessControl.AccessControlSections]$IncludeSections =
                 [Security.AccessControl.AccessControlSections]::All
         )
-        
+
         return [IO.FileSystemAclExtensions]::GetAccessControl($this, $IncludeSections)
     }
 }
@@ -447,9 +454,10 @@ Always have a .psd1. Use `New-ModuleManifest` to create one.
 Always have a .psm1 file. See the template below.
 
 Always choose and use a default command prefix for all your module's commands to avoid name conflicts with other
-modules. Set the prefix with the `DefaultCommandPrefix` property in your module's manifest. For example, Carbon uses
-`C`, `BuildMasterAutomation` uses `BM`, `BitbucketServerAutomation` uses `BBServer`, `ProGetAutomation` uses `ProGet`,
-etc.
+modules. Add the prefix to the literal function names. Do ***not** set the prefix with the `DefaultCommandPrefix`
+property in your module's manifest: PowerShell uses the non-prefixed version of commands to determine if command across
+modules clobber each other. For example, Carbon uses `C`, `BuildMasterAutomation` uses `BM`, `BitbucketServerAutomation`
+uses `BBServer`, `ProGetAutomation` uses `ProGet`, etc.
 
 Never store global state in a module variable. Module variables should only hold stateless information. If your module
 has state it needs to keep track of (like a connection to a server or something), follow the pattern used by PowerShell:
@@ -477,21 +485,23 @@ above, but add `Use-CallerPreference` after `Set-StrictMode`:
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 ```
 
+Module variables must be prefixed with the `script:` scope to identity them as being used throughout the module.
+
 
 ## Module .psm1 Template
 
 ```powershell
 # Declare module-level variables
-$myModuleVar = 'fubar'
+$script:myModuleVar = 'fubar'
  
 # Do other stuff: add types, add extended type data, etc.
  
 # Include your functions for developers.
 $functionRoot = Join-Path -Path $PSScriptRoot -ChildPath 'Functions'
-if( (Test-Path -Path $functionRoot) )
+if ((Test-Path -Path $functionRoot))
 {
     Get-ChildItem -Path $functionRoot -Filter '*.ps1' | ForEach-Object { . $_.FullName }
 }
 
-# When packaging your module, merge your function files into this file here. 
+# When packaging your module, merge your function files into this file here.
 ```
