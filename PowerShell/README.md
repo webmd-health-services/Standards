@@ -6,7 +6,7 @@ Version 2.0.0 (2021-10-14)
 
 [CHANGELOG](CHANGELOG.md)
 
-This document explains our PowerShell coding standards and guidelines. Following these will keep our code consistent and
+This document explains our PowerShell coding standards and guidelines. Following these will keep our code consistent and
 easier to understand and maintain.
 
 # Variables
@@ -25,7 +25,7 @@ PowerShell has special type accelerators that are aliases to special types. It s
 using a type accelerator, so they should always be lower case if the accelerator is an alias to a type with a different
 name (e.g. `[int]` for `Int32`) or not in the `System` namespace (e.g. `[ipaddress]` for `System.Net.IPAddress`).
 
-Never use the `System`  part of a class's name. PowerShell adds it for you automatically.
+Never use the `System`  part of a class's name. PowerShell adds it for you automatically.
 
 ```powershell
 [String] $var1 = 'var1'
@@ -75,9 +75,9 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 Follow these guidelines whenever you write a standalone script.
 
-Always support `-WhatIf` if your script/function changes something.
+Always support `-WhatIf` if your script/function changes something.
 
-You should use a standard PowerShell verb as the first part of a script name (see below for the exceptions). Use a dash
+You should use a standard PowerShell verb as the first part of a script name (see below for the exceptions). Use a dash
 to separate the verb from the noun/target in the second part of the name, e.g. `Initialize-DeveloperComputer.ps1`,
 `Repair-HgCaseFoldingCollision.ps1`, `Invoke-Robocopy.ps1`. There should only be one dash in the command's name. For
 help in choosing or finding a verb, see
@@ -89,14 +89,14 @@ Exceptions to using a standard PowerShell verb in your script's name:
 * `build.ps1`: for the script that builds the code in your repository
 * `install.ps1`: for the script that installs the software on the local computer.
 
-Always include a synopsis, description, and at least one example in the documentation of your script. PowerShell has a
+Always include a synopsis, description, and at least one example in the documentation of your script. PowerShell has a
 great built-in help system. Use it! See [June Blender's "PowerShell Help Deep-Dive" talk](https://youtu.be/U7c04Vwqqgk)
 on how to write good documentation.
 
 Never hard-code absolute paths. If you need to reach out to an external resource, the best approach is to use a
 parameter to have the user pass you the location of that resource. If that won't work, don't hard-code absolute paths.
-Use paths relative to your script. PowerShell 3+ has a pre-defined variable, `$PSScriptRoot`, which is the directory
-where your script is located. Use the `Join-Path` cmdlet to make absolute paths from the script's current location or
+Use paths relative to your script. PowerShell 3+ has a pre-defined variable, `$PSScriptRoot`, which is the directory
+where your script is located. Use the `Join-Path` cmdlet to make absolute paths from the script's current location or
 the user's current location.
 
 PowerShell keywords should always be in lowercase, e.g. `function`, `process`, etc.
@@ -116,14 +116,35 @@ command's positional parameters. Always use the parameter/switch name, e.g. `Joi
 'build.ps1'` not `Join-Path $PSScriptRoot 'build.ps1'`. This improves readability and improves forward compatibility if
 a command's positional parameters change.
 
+# Importing Dependencies
+
+Always explicitly import functions from other modules, except function's from PowerShell's built-in modules, e.g.
+`Microsoft.PowerShell.Management`, `Microsoft.PowerShell.Utility`, and other builtin modules that you can't install from
+the PowerShell Gallery. Don't rely on PowerShell's auto-import functionality. Multiple modules may export the same
+function, and PowerShell may import the wrong one. You or another developer want to move a function from one module to
+another. If scripts and modules always explicitly import their dependencies, it makes re-organizing modules easier and
+doesn't force script updates.
+
+Don't install modules globally or depend on globally installed modules (except those that ship with PowerShell).
+Instead, use [Prism](https://github.com/webmd-health-services/Prism) to save dependencies privately and import from
+the private location.
+
+When using `Import-Module` to import dependencies, list the functions your script or module uses:
+
+```powershell
+Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath 'PSModules\Module') `
+              -Function @('Function1', 'Function2') `
+              -Verbose:$false
+```
+
 ## Parameters
 
-For script/function parameters, attributes should be ordered this way: documentation, the `Parameter` attribute, any
+For script/function parameters, attributes should be ordered this way: documentation, the `Parameter` attribute, any
 validation attributes, documentation, and the parameter type (optional) and name on the same line. Put a space between
 the parameter's type and the name.
 
 Parameter names should be capitalized and Pascal-cased (i.e. every word begins with a capital letter. Abbreviations of
-two letters should be in all caps, e.g. ID  instead of Id .) (See the [Types](#types) section above for how to case type
+two letters should be in all caps, e.g. ID  instead of Id .) (See the [Types](#types) section above for how to case type
 names.)
 
 ```powershell
@@ -140,7 +161,7 @@ param(
     # Just migrate the database(s).
     [Parameter(ParameterSetName='PartialPipeline')]
     [switch] $MigrateDB,
- 
+
     # This is an optional parameter. Note the missing [Parameter()] attribute.
     [String] $Optional
 )
@@ -149,12 +170,12 @@ param(
 Parameter attribute property values should only be visible and set if its value is being set to a non-default value,
 i.e. `[Parameter(ParameterSetName='PartialPipeline')]` not
 `[Parameter(Mandatory=$false,ParameterSetName='PartialPipeline')]`. Boolean attribute property values must be omitted,
-e.g. `[Parameter(Mandatory)]`, not `[Parameter(Mandatory=$true)]`.
+e.g. `[Parameter(Mandatory)]`, not `[Parameter(Mandatory=$true)]`.
 
 Omit the parameter attribute entirely if it doesn't set any property values, e.g. omit any parameter attribute that
 looks like `[Parameter()]`.
 
-Always use the `CmdletBinding` attribute. All functions and scripts should begin like this:
+Always use the `CmdletBinding` attribute. All functions and scripts should begin like this:
 
 ```powershell
 [CmdletBinding()]
@@ -170,12 +191,12 @@ Use the following template for new scripts:
 <#
 .SYNOPSIS
 A short, one line summary of what the script does.
- 
+
 .DESCRIPTION
 The `MY SCRIPT NAME.ps1` script... A detailed description of what the script does, why it does it, and how it does it.
 Your future self will forget how your script was implemented and what it does. Use the description to explain that. Your
 future self will thank you.
- 
+
 .EXAMPLE
 MY SCRIPT NAME.ps1
 Demonstrates how this script does what it does.
@@ -279,7 +300,7 @@ else
 ```
 
 
-When negating a statement, use the -not  operator.
+When negating a statement, use the -not  operator.
 
 ```powershell
 # Instead of using !
@@ -344,9 +365,9 @@ function ApprovedVerb-Noun
     [OutputType([Object])]
     param(
     )
- 
+
     Set-StrictMode -Version 'Latest'
- 
+
     # Logic here.
 }
 ```
@@ -375,17 +396,17 @@ function ApprovedVerb-Noun
         [Parameter(Mandatory,ValueFromPipeline)]
         $InputObject
     )
- 
+
     begin
     {
         Set-StrictMode -Version 'Latest'
-     }
- 
+     }
+
     process
     {
         # Logic here.
     }
- 
+
     end
     {
     }
@@ -419,11 +440,11 @@ Layout a module like this:
   * script.ps1
 ```
 
-Put your module's assembly and other third-party assemblies, into a `bin` directory.
+Put your module's assembly and other third-party assemblies, into a `bin` directory.
 
 Put your about help topics into a directory whose name matches the locale name the help is written in.
 
-Put your module's functions into a `Functions` directory. Each function should be in its own file, whose name matches
+Put your module's functions into a `Functions` directory. Each function should be in its own file, whose name matches
 the function name.
 
 Do ***not*** put extended type information into `ps1xml` files. A module's custom type data isn't removed when the
@@ -447,7 +468,7 @@ if (-not ([IO.DirectoryInfo]::New([Environment]::CurrentDirectory) | Get-Member 
 }
 ```
 
-Put XML-based format/display data into a `Formats` directory. All formats for each object should be in its own file.
+Put XML-based format/display data into a `Formats` directory. All formats for each object should be in its own file.
 
 Always have a .psd1. Use `New-ModuleManifest` to create one.
 
@@ -456,8 +477,8 @@ Always have a .psm1 file. See the template below.
 Always choose and use a default command prefix for all your module's commands to avoid name conflicts with other
 modules. Add the prefix to the literal function names. Do ***not** set the prefix with the `DefaultCommandPrefix`
 property in your module's manifest: PowerShell uses the non-prefixed version of commands to determine if command across
-modules clobber each other. For example, Carbon uses `C`, `BuildMasterAutomation` uses `BM`, `BitbucketServerAutomation`
-uses `BBServer`, `ProGetAutomation` uses `ProGet`, etc.
+modules clobber each other. For example, Carbon uses `C`, `BuildMasterAutomation` uses `BM`, `BitbucketServerAutomation`
+uses `BBServer`, `ProGetAutomation` uses `ProGet`, etc.
 
 Never store global state in a module variable. Module variables should only hold stateless information. If your module
 has state it needs to keep track of (like a connection to a server or something), follow the pattern used by PowerShell:
@@ -493,9 +514,9 @@ Module variables must be prefixed with the `script:` scope to identity them as b
 ```powershell
 # Declare module-level variables
 $script:myModuleVar = 'fubar'
- 
+
 # Do other stuff: add types, add extended type data, etc.
- 
+
 # Include your functions for developers.
 $functionRoot = Join-Path -Path $PSScriptRoot -ChildPath 'Functions'
 if ((Test-Path -Path $functionRoot))
